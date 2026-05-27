@@ -194,6 +194,8 @@ if dashboard == "Citizen Dashboard":
         st.session_state.selected_species = "Japanese Knotweed"
     if "active_species_popup" not in st.session_state:
         st.session_state.active_species_popup = None
+    if "clicked_location" not in st.session_state:
+        st.session_state.clicked_location = None
 
     if st.session_state.active_species_popup:
         popup_species = st.session_state.active_species_popup
@@ -243,15 +245,33 @@ if dashboard == "Citizen Dashboard":
                     aliases=["Trail ID:"]
                 )
             ).add_to(m)
+        if st.session_state.clicked_location is not None:
+            folium.Marker(
+                location=[
+                    st.session_state.clicked_location["lat"],
+                    st.session_state.clicked_location["lng"]
+                ],
+                popup="Selected observation location",
+                tooltip="Selected location",
+                icon=folium.Icon(
+                    color="green",
+                    icon="ok-sign"
+                )
+            ).add_to(m)
 
         map_data = st_folium(
             m,
             width=900,
             height=600
         )
-        clicked_location = None
+        # save clicked point
         if map_data and map_data.get("last_clicked"):
-            clicked_location = map_data["last_clicked"]
+            st.session_state.clicked_location = map_data["last_clicked"]
+            st.rerun()
+
+        clicked_location = st.session_state.clicked_location
+
+        if clicked_location:
             st.success(
                 f"Selected location: "
                 f"{clicked_location['lat']:.6f}, "
@@ -277,12 +297,14 @@ if dashboard == "Citizen Dashboard":
     st.divider()
 
     st.subheader("Submit Observation")
-    uploaded_photo = st.camera_input("Take a photo of the invasive species")
+    live_photo = st.camera_input("Take a photo of the invasive species")
 
     uploaded_photo = st.file_uploader(
         "Or upload existing photo",
         type=["jpg", "jpeg", "png"]
     )
+
+    photo = live_photo if live_photo is not None else uploaded_photo
 
     notes = st.text_area(
         "Field Notes",
@@ -299,20 +321,20 @@ if dashboard == "Citizen Dashboard":
         st.warning("Click on the map to select a location.")
 
     if st.button("Submit Observation"):
-        if uploaded_photo is None:
+        if photo is None:
             st.error("Please upload a photo.")
         elif clicked_location is None:
             st.error("Please select a location on the map.")
         else:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = f"{timestamp}_{uploaded_photo.name}"
+            filename = f"{timestamp}_{photo.name}"
             save_path = os.path.join(
                 foto_folder,
                 filename
             )
             os.makedirs(foto_folder, exist_ok=True)
             with open(save_path, "wb") as f:
-                f.write(uploaded_photo.read())
+                f.write(photo.read())
             save_submission_to_geojson(
                 species=st.session_state.selected_species,
                 latitude=latitude,
