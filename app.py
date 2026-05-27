@@ -185,7 +185,7 @@ if dashboard == "Citizen Dashboard":
             "description": "Himalayan Balsem is native to Northern India and was introduced to Europe around 1850 as an "
                            "ornamental plant. It can grow up to 2,5 meters, it has 2,5 to 4,5 centimeter long purple flowers, "
                            "like in the image, and they bloom between June and October. It is also well known for its exploding"
-                           " seed pods, which form after flowering. ."
+                           " seed pods, which form after flowering."
         },
         "Big Scary Monster": {
             "image": "media/big_scary_monster.jpg",
