@@ -2,7 +2,6 @@ import os
 from datetime import datetime
 import streamlit as st
 import folium
-import geopandas as gpd
 from streamlit_folium import st_folium
 import json
 
@@ -86,16 +85,18 @@ if "submission_status" not in st.session_state:
 @st.cache_data
 def load_prediction_data():
     try:
-        gdf = gpd.read_file(predicted_locations)
-        return gdf
+        with open(predicted_locations, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return data
     except Exception:
         return None
 
 @st.cache_data
 def load_trails():
     try:
-        gdf = gpd.read_file("data/trails_5pm.geojson")
-        return gdf
+        with open("data/trails_5pm.geojson", "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return data
     except Exception:
         return None
 
@@ -140,11 +141,12 @@ def save_submission_to_geojson(
 
 @st.cache_data
 def load_submissions():
-    path = "data/uploads/submissions.geojson"
-    if not os.path.exists(path):
+    try:
+        with open("data/uploads/submissions.geojson", "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return data
+    except Exception:
         return None
-    gdf = gpd.read_file(path)
-    return gdf
 
 dashboard = st.segmented_control(
     "Navigation",
@@ -327,106 +329,101 @@ if dashboard == "Citizen Dashboard":
 # -------------------------------------
 
 elif dashboard == "Municipality Dashboard":
-    load_submissions.clear()
     st.title("Municipality Dashboard")
-    gdf = load_submissions()
-    prediction_gdf = load_prediction_data()
-    if gdf is None or len(gdf) == 0:
+    submissions = load_submissions()
+    prediction_data = load_prediction_data()
+    if (submissions is None or "features" not in submissions or len(submissions["features"]) == 0):
         st.info("No submissions yet.")
         st.stop()
-    gdf["lat"] = gdf.geometry.y
-    gdf["lon"] = gdf.geometry.x
-    gdf = gdf.reset_index(drop=True)
 
+    features = submissions["features"]
     # selected observation state
     if "selected_observation" not in st.session_state:
         st.session_state.selected_observation = 0
 
     list_col, detail_col = st.columns([1, 2])
 
-    # Observation List
+    # Observation list
     with list_col:
         st.subheader("Observations")
-        for idx, row in gdf.iterrows():
-            status = str(row.get("status", "pending")).lower()
+        for idx, feature in enumerate(features):
+            props = feature["properties"]
+            species = props.get("species", "Unknown")
+            status = props.get("status", "pending")
             with st.container(border=True):
-                # clickable observation
                 if st.button(
-                    f"{row['species']} ({status})",
+                    f"{species} ({status})",
                     key=f"select_{idx}",
                     use_container_width=True
                 ):
                     st.session_state.selected_observation = idx
-                # moderation buttons
                 accept_col, reject_col = st.columns(2)
+                # Action buttons
                 with accept_col:
                     if st.button(
-                            "✅ Accept",
-                            key=f"accept_{idx}",
-                            use_container_width=True
+                        "✅ Accept",
+                        key=f"accept_{idx}",
+                        use_container_width=True
                     ):
-                        with open(submissions_geojson, "r", encoding="utf-8") as f:
-                            data = json.load(f)
-                        data["features"][idx]["properties"]["status"] = "verified"
+                        submissions["features"][idx]["properties"]["status"] = "verified"
                         with open(submissions_geojson, "w", encoding="utf-8") as f:
-                            json.dump(data, f, indent=2)
+                            json.dump(submissions, f, indent=2)
                         load_submissions.clear()
                         st.success("Observation verified")
                         st.rerun()
-
                 with reject_col:
                     if st.button(
-                            "❌ Reject",
-                            key=f"reject_{idx}",
-                            use_container_width=True
+                        "❌ Reject",
+                        key=f"reject_{idx}",
+                        use_container_width=True
                     ):
-                        with open(submissions_geojson, "r", encoding="utf-8") as f:
-                            data = json.load(f)
-                        data["features"][idx]["properties"]["status"] = "rejected"
+                        submissions["features"][idx]["properties"]["status"] = "rejected"
                         with open(submissions_geojson, "w", encoding="utf-8") as f:
-                            json.dump(data, f, indent=2)
+                            json.dump(submissions, f, indent=2)
                         load_submissions.clear()
                         st.warning("Observation rejected")
                         st.rerun()
 
-    # Selected Observation details
+    # Submission details
     with detail_col:
         selected_idx = st.session_state.selected_observation
-        selected = gdf.loc[selected_idx]
+        selected_feature = features[selected_idx]
+        props = selected_feature["properties"]
+        coords = selected_feature["geometry"]["coordinates"]
+        lon = coords[0]
+        lat = coords[1]
         st.subheader("Observation Details")
         m = folium.Map(
-            location=[selected["lat"], selected["lon"]],
+            location=[lat, lon],
             zoom_start=16
         )
-        if prediction_gdf is not None:
+        if prediction_data is not None:
             folium.GeoJson(
-                prediction_gdf,
+                prediction_data,
                 name="Predictions",
                 style_function=lambda feature: {
                     "fillColor": "red",
                     "color": "red",
                     "weight": 1,
                     "fillOpacity": 0.5
-                },
-                tooltip=folium.GeoJsonTooltip(
-                    fields=["OBJECTID"],
-                    aliases=["Prediction ID:"]
-                )
+                }
             ).add_to(m)
+
         folium.Marker(
-            location=[selected["lat"], selected["lon"]],
-            popup=selected["species"],
+            location=[lat, lon],
+            popup=props.get("species", "Unknown"),
             icon=folium.Icon(
                 color="red",
                 icon="info-sign"
             )
         ).add_to(m)
+
         st_folium(m, width=900, height=400)
-        st.markdown(f"### {selected['species']}")
-        st.write("**Status:**", selected["status"])
-        st.write("**Datetime:**", selected["datetime"])
-        st.write("**Notes:**", selected["field_notes"])
-        image_path = selected["image_path"]
+        st.markdown(f"### {props.get('species', 'Unknown')}")
+        st.write("**Status:**", props.get("status", "pending"))
+        st.write("**Datetime:**", props.get("datetime", ""))
+        st.write("**Notes:**", props.get("field_notes", ""))
+        image_path = props.get("image_path", "")
         if image_path and os.path.exists(image_path):
             st.image(image_path, use_container_width=True)
         else:
