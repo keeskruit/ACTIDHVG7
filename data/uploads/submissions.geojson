@@ -1,0 +1,107 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.666641235351563,
+          52.03950454621522
+        ]
+      },
+      "properties": {
+        "species": "Japanese Knotweed",
+        "field_notes": "",
+        "datetime": "2026-05-27T12:06:51.560074",
+        "image_path": "data/uploads/fotos\\20260527_140651_Schermafbeelding 2026-03-12 085039.png",
+        "status": "rejected"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.66423797607422,
+          52.0339078196625
+        ]
+      },
+      "properties": {
+        "species": "Japanese Knotweed",
+        "field_notes": "",
+        "datetime": "2026-05-27T12:08:11.656897",
+        "image_path": "data/uploads/fotos\\20260527_140811_Schermafbeelding 2026-03-12 092645.png",
+        "status": "verified"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.66423797607422,
+          52.0339078196625
+        ]
+      },
+      "properties": {
+        "species": "Japanese Knotweed",
+        "field_notes": "",
+        "datetime": "2026-05-27T12:08:13.682369",
+        "image_path": "data/uploads/fotos\\20260527_140813_Schermafbeelding 2026-03-12 092645.png",
+        "status": "rejected"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.66423797607422,
+          52.0339078196625
+        ]
+      },
+      "properties": {
+        "species": "Japanese Knotweed",
+        "field_notes": "",
+        "datetime": "2026-05-27T12:08:16.023164",
+        "image_path": "data/uploads/fotos\\20260527_140816_Schermafbeelding 2026-03-12 092645.png",
+        "status": "rejected"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.66423797607422,
+          52.0339078196625
+        ]
+      },
+      "properties": {
+        "species": "Himalayan Balsam",
+        "field_notes": "",
+        "datetime": "2026-05-27T12:08:21.112508",
+        "image_path": "data/uploads/fotos\\20260527_140821_Schermafbeelding 2026-03-12 092645.png",
+        "status": "rejected"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.66423797607422,
+          52.0339078196625
+        ]
+      },
+      "properties": {
+        "species": "Himalayan Balsam",
+        "field_notes": "",
+        "datetime": "2026-05-27T12:08:24.234917",
+        "image_path": "data/uploads/fotos\\20260527_140824_Schermafbeelding 2026-03-12 092645.png",
+        "status": "rejected"
+      }
+    }
+  ]
+}
