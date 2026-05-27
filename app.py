@@ -454,3 +454,14 @@ elif dashboard == "Municipality Dashboard":
             st.image(image_path, use_container_width=True)
         else:
             st.info("No image available")
+
+
+st.markdown(
+    """
+    <hr style="margin-top: 2rem; margin-bottom: 0.5rem;">
+    <div style="text-align: center; font-size: 12px; opacity: 0.7;">
+        Image credits: Wikimedia Commons
+    </div>
+    """,
+    unsafe_allow_html=True
+)
