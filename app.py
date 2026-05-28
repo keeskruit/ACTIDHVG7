@@ -75,7 +75,7 @@ h1, h2, h3, h4, h5, h6, p, div, span, label {
 """, unsafe_allow_html=True)
 
 submissions_geojson = "data/uploads/submissions.geojson"
-predicted_locations = "data/04_predicted_invasive_species_areas.geojson"
+predicted_locations = "data/predictedareas.geojson"
 foto_folder = "data/uploads/fotos"
 
 if "submission_status" not in st.session_state:
@@ -94,7 +94,7 @@ def load_prediction_data():
 @st.cache_data
 def load_trails():
     try:
-        with open("data/04_trails_Groenlo.geojson", "r", encoding="utf-8") as f:
+        with open("data/trails_5pm.geojson", "r", encoding="utf-8") as f:
             data = json.load(f)
         return data
     except Exception:
