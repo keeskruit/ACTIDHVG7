@@ -365,41 +365,55 @@ elif dashboard == "Municipality Dashboard":
         for idx, feature in enumerate(features):
             props = feature["properties"]
             species = props.get("species", "Unknown")
-            status = props.get("status", "pending")
+            status = props.get("status", "pending").lower()
+            datetime_text = props.get("datetime", "")
+            image_path = props.get("image_path", "")
+            coords = feature["geometry"]["coordinates"]
+            lon = coords[0]
+            lat = coords[1]
+
             with st.container(border=True):
-                if st.button(
-                    f"{species} ({status})",
-                    key=f"select_{idx}",
-                    use_container_width=True
-                ):
-                    st.session_state.selected_observation = idx
-                accept_col, reject_col = st.columns(2)
-                # Action buttons
+                # compact header
+                st.markdown(
+                    f"""
+                    **{species}**  
+                    Status: : {status.upper()}  
+                    Submitted: {datetime_text[:16].replace("T", " ")}  
+                    Location: {lat:.4f}, {lon:.4f}
+                    """
+                )
+                open_col, accept_col, reject_col = st.columns([2, 1, 1])
+                with open_col:
+                    if st.button(
+                            "Open",
+                            key=f"select_{idx}",
+                            use_container_width=True
+                    ):
+                        st.session_state.selected_observation = idx
                 with accept_col:
                     if st.button(
-                        "✅ Accept",
-                        key=f"accept_{idx}",
-                        use_container_width=True
+                            "✅",
+                            key=f"accept_{idx}",
+                            use_container_width=True
                     ):
                         submissions["features"][idx]["properties"]["status"] = "verified"
+
                         with open(submissions_geojson, "w", encoding="utf-8") as f:
                             json.dump(submissions, f, indent=2)
                         load_submissions.clear()
-                        st.success("Observation verified")
                         st.rerun()
                 with reject_col:
                     if st.button(
-                        "❌ Reject",
-                        key=f"reject_{idx}",
-                        use_container_width=True
+                            "❌",
+                            key=f"reject_{idx}",
+                            use_container_width=True
                     ):
                         submissions["features"][idx]["properties"]["status"] = "rejected"
                         with open(submissions_geojson, "w", encoding="utf-8") as f:
                             json.dump(submissions, f, indent=2)
                         load_submissions.clear()
-                        st.warning("Observation rejected")
                         st.rerun()
-
+    
     # Submission details
     with detail_col:
         selected_idx = st.session_state.selected_observation
