@@ -7,7 +7,7 @@ import json
 
 # Setup
 st.set_page_config(
-    page_title="Invasive Species Monitoring",
+    page_title="Invader Mapper",
     page_icon="🌿",
     layout="wide"
 )
@@ -75,7 +75,7 @@ h1, h2, h3, h4, h5, h6, p, div, span, label {
 """, unsafe_allow_html=True)
 
 submissions_geojson = "data/uploads/submissions.geojson"
-predicted_locations = "data/predictedareas.geojson"
+predicted_locations = "data/04_predicted_invasive_species_areas.geojson"
 foto_folder = "data/uploads/fotos"
 
 if "submission_status" not in st.session_state:
@@ -94,7 +94,7 @@ def load_prediction_data():
 @st.cache_data
 def load_trails():
     try:
-        with open("data/trails_5pm.geojson", "r", encoding="utf-8") as f:
+        with open("data/04_trails_Groenlo.geojson", "r", encoding="utf-8") as f:
             data = json.load(f)
         return data
     except Exception:
@@ -107,10 +107,6 @@ def save_submission_to_geojson(
     notes: str,
     image_path: str
 ):
-    """
-    Appends a new observation to a GeoJSON FeatureCollection.
-    """
-
     feature = {
         "type": "Feature",
         "geometry": {
@@ -154,14 +150,21 @@ dashboard = st.segmented_control(
     default="Citizen Dashboard"
 )
 
+# Title and logo
+
+title_col, logo_col = st.columns([6, 1])
+with title_col:
+    st.header("Invader Mapper")
+
+with logo_col:
+    st.image("media/App_logo.png", width=80)
+
 # -------------------------------------
 # Citizen Dashboard
 # -------------------------------------
 
 if dashboard == "Citizen Dashboard":
-    st.title("Invader Finder")
     left_col, map_col, right_col = st.columns([1, 5, 1])
-
     species_info = {
         "Japanese Knotweed": {
             "image": "media/japanese_knotweed.jpg",
@@ -186,10 +189,6 @@ if dashboard == "Citizen Dashboard":
                            "ornamental plant. It can grow up to 2,5 meters, it has 2,5 to 4,5 centimeter long purple flowers, "
                            "like in the image, and they bloom between June and October. It is also well known for its exploding"
                            " seed pods, which form after flowering."
-        },
-        "Big Scary Monster": {
-            "image": "media/big_scary_monster.jpg",
-            "description": "Warning, very violent! Approach with care! Very hostile to local wildlife!"
         }
     }
 
@@ -214,7 +213,7 @@ if dashboard == "Citizen Dashboard":
 
 
     with left_col:
-        st.subheader("Targets")
+        st.subheader("Targeted Invasive Species")
         for species_name in species_info.keys():
             if st.button(species_name, use_container_width=True):
                 st.session_state.selected_species = species_name
@@ -226,7 +225,7 @@ if dashboard == "Citizen Dashboard":
 
     # Map Display
     with map_col:
-        st.subheader("Spot the Invasive Species")
+        st.subheader("Locate the species on the map below")
         trails_gdf = load_trails()
         map_center = [52.052, 6.718]
         m = folium.Map(
@@ -295,21 +294,12 @@ if dashboard == "Citizen Dashboard":
         5. Jan-Peter — 11 observations  
         """)
 
-    # =================================================
-    # PHOTO UPLOAD + SUBMISSION
-    # =================================================
+    # Submission form
     st.divider()
-
     st.subheader("Submit Observation")
     live_photo = st.camera_input("Take a photo of the invasive species")
-
-    uploaded_photo = st.file_uploader(
-        "Or upload existing photo",
-        type=["jpg", "jpeg", "png"]
-    )
-
+    uploaded_photo = st.file_uploader("Or upload existing photo", type=["jpg", "jpeg", "png"])
     photo = live_photo if live_photo is not None else uploaded_photo
-
     notes = st.text_area(
         "Field Notes",
         placeholder="Optional notes about the observation..."
@@ -355,7 +345,7 @@ if dashboard == "Citizen Dashboard":
 # -------------------------------------
 
 elif dashboard == "Municipality Dashboard":
-    st.title("Municipality Dashboard")
+    st.subheader("Municipality Dashboard")
     submissions = load_submissions()
     prediction_data = load_prediction_data()
     if (submissions is None or "features" not in submissions or len(submissions["features"]) == 0):
@@ -455,7 +445,6 @@ elif dashboard == "Municipality Dashboard":
         else:
             st.info("No image available")
 
-
 st.markdown(
     """
     <hr style="margin-top: 2rem; margin-bottom: 0.5rem;">
@@ -465,3 +454,7 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
+left, center, right = st.columns([1, 1, 1])
+with center:
+    st.image("media/Atlas_logo.png", width=500)
